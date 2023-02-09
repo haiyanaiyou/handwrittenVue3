@@ -26,11 +26,11 @@ build({
     format: outputFormat,
     globalName: pkg.buildOptions?.name,
     platform: format === 'cjs' ? 'node' : 'browser',
-    watch: { // 监控文件变化
-        onRebuild(error) {
-            if (!error) console.log(`rebuilt~~~~`)
-        }
-    }
+    // watch: { // 监控文件变化
+    //     onRebuild(error) {
+    //         if (!error) console.log(`rebuilt~~~~`)
+    //     }
+    // }
 }).then(() => {
     console.log('watching~~~')
 })
