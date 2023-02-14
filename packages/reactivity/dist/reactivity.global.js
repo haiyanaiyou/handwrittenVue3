@@ -32,15 +32,11 @@ var VueReactivity = (() => {
   function reactive(target) {
     return createReactiveObject(target);
   }
-  var mutableHandles = {
-    // 使用reflect 保证this指向永远指向代理对象
-    /*
-      Reflect API 是 JavaScript 中的内置对象，提供了获取和设置对象属性值等方法。
-      通过使用 Reflect API，Vue 可以确保其对反应对象的访问是一致和快速的，无论使用的是哪种类型的对象（普通对象，Map，Set 等）。
-      此外，使用 Reflect API 确保了对象属性的访问以一致的方式处理，使得 Vue 更容易为每种类型的对象提供正确的反应行为。
-    */
+  var reactiveMap = /* @__PURE__ */ new WeakMap();
+  var mutationHandler = {
+    // Reflect的使用是为了确保this的正确使用
     get(target, key, receiver) {
-      if (key === "__V_isReactive" /* IS_REACTIVE */) {
+      if (key === "is__reactive" /* IS_REACTIVE */) {
         return true;
       }
       return Reflect.get(target, key, receiver);
@@ -49,18 +45,18 @@ var VueReactivity = (() => {
       return Reflect.set(target, key, value, receiver);
     }
   };
-  var reactiveMap = /* @__PURE__ */ new WeakMap();
   function createReactiveObject(target) {
     if (!isObject(target)) {
       return target;
     }
-    if (reactiveMap.get(target)) {
-      return reactiveMap;
+    const existingProxy = reactiveMap.get(target);
+    if (existingProxy) {
+      return existingProxy;
     }
-    if (target["__V_isReactive" /* IS_REACTIVE */]) {
+    if (target["is__reactive" /* IS_REACTIVE */]) {
       return target;
     }
-    const proxy = new Proxy(target, mutableHandles);
+    const proxy = new Proxy(target, mutationHandler);
     reactiveMap.set(target, proxy);
     return proxy;
   }
